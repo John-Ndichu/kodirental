@@ -6,7 +6,7 @@ House-hunting in Kenya runs on word of mouth. Landlords and agents routinely quo
 
 kodirental closes that gap: real renters report what they actually pay, and anyone can check whether a quote they've been given is reasonable for that area and house type, backed by real data, with an honest sense of how confident that answer is.
 
-🔗 **Live now:** [https://kodirental-api.fly.dev/api/v1/swagger-ui/index.html](https://kodirental-api.fly.dev/api/v1/swagger-ui/index.html)
+🔗 **Live now:** [https://kodirental.onrender.com/api/v1/swagger-ui/index.html](https://kodirental.onrender.com/api/v1/swagger-ui/index.html)
 
 > kodirental is an API, not a website. There's no visual homepage. The links below either return raw JSON (correct, expected behavior for an API) or open the interactive Swagger UI, which is the human-friendly way to explore it.
 
@@ -18,10 +18,10 @@ The API is deployed and publicly reachable. No local setup required to try it.
 
 | What                                  | URL                                                                                                                        |
 | ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| **Base URL**                          | `https://kodirental-api.fly.dev/api/v1`                                                                                    |
-| **Interactive API docs (Swagger UI)** | [https://kodirental-api.fly.dev/api/v1/swagger-ui/index.html](https://kodirental-api.fly.dev/api/v1/swagger-ui/index.html) |
-| **Raw OpenAPI spec**                  | [https://kodirental-api.fly.dev/api/v1/v3/api-docs](https://kodirental-api.fly.dev/api/v1/v3/api-docs)                     |
-| **Try it, list all areas**            | [https://kodirental-api.fly.dev/api/v1/areas](https://kodirental-api.fly.dev/api/v1/areas)                                 |
+| **Base URL**                          | `https://kodirental.onrender.com/api/v1`                                                                                    |
+| **Interactive API docs (Swagger UI)** | [https://kodirental.onrender.com/api/v1/swagger-ui/index.html](https://kodirental.onrender.com/api/v1/swagger-ui/index.html) |
+| **Raw OpenAPI spec**                  | [https://kodirental.onrender.com/api/v1/v3/api-docs](https://kodirental.onrender.com/api/v1/v3/api-docs)                     |
+| **Try it, list all areas**            | [https://kodirental.onrender.com/api/v1/areas](https://kodirental.onrender.com/api/v1/areas)                                 |
 
 **Quickest way to explore the API:** open the Swagger UI link above. It documents every endpoint, lets you paste a JWT via the **Authorize** button, and lets you send real requests directly from the browser, no Postman or code required.
 
@@ -29,7 +29,7 @@ The API is deployed and publicly reachable. No local setup required to try it.
 
 **Infrastructure:**
 
-- **API:** deployed on [Fly.io](https://fly.io) (Paris region)
+- **API:** deployed on Render
 - **Database:** hosted PostgreSQL on [Supabase](https://supabase.com) (via the Session Pooler, IPv4 compatible)
 
 ---
@@ -42,7 +42,7 @@ The API is deployed and publicly reachable. No local setup required to try it.
 - **Spring Security** + **JWT** (jjwt): stateless authentication
 - **Spring Data JPA** / **Hibernate**: ORM
 - **springdoc openapi**: interactive API documentation (Swagger UI)
-- **Docker** + **Fly.io**: containerized deployment
+- **Docker** + **Render**: containerized deployment
 - **JUnit 5** + **Mockito** + **AssertJ**: automated testing
 - **Maven**: build tool
 
@@ -78,7 +78,7 @@ The combination of **Area + HouseType + utilitiesIncluded** defines a "market se
 
 ### Environment variables
 
-Set these before starting the app (locally, in your IDE run configuration; on Fly.io, via `fly secrets set`):
+Set these before starting the app (locally, in your IDE run configuration; on render, via render env):
 
 | Variable      | Description                                         |
 | ------------- | --------------------------------------------------- |
@@ -88,7 +88,7 @@ Set these before starting the app (locally, in your IDE run configuration; on Fl
 
 ### Database
 
-Create a database named `kodirental` (or `postgres`, if using Supabase's default). Flyway handles schema creation and seed data (regions/areas) automatically on first startup. No manual SQL required.
+Create a database named `kodirental` (or `postgres`, if using Supabase's default). Render handles schema creation and seed data (regions/areas) automatically on first startup. No manual SQL required.
 
 ### Running
 
@@ -117,15 +117,7 @@ docker run -p 8080:8080 \
   kodirental-api
 ```
 
-### Deploying (Fly.io)
-
-```bash
-fly deploy
-```
-
-Secrets are set once via `fly secrets set KEY=value` and persist across deploys.
-
----
+### Deploying (render)
 
 ## Authentication
 
@@ -253,10 +245,10 @@ Built incrementally against a self directed growth level spec:
 - [x] **Level 2, Trust & Confidence:** weighted median, multi factor confidence scoring
 - [x] **Level 3, Abuse Resistance:** duplicate submission prevention, statistical outlier flagging
 - [x] **Level 4, Trustworthy & Documented:** automated tests, interactive API documentation (Swagger UI)
-- [x] **Level 5, Live:** deployed on Fly.io with hosted PostgreSQL (Supabase), real secrets management
+- [x] **Level 5, Live:** deployed on Render with hosted PostgreSQL (Supabase), real secrets management
 
 ---
 
 ## Author
 
-Built by Margaret Njoki as a self directed learning project, applying Spring Boot, PostgreSQL, JWT authentication, and statistical trust modeling to a real problem in the Kenyan rental market.
+Built by John Ndichu as a self directed learning project, applying Spring Boot, PostgreSQL, JWT authentication, and statistical trust modeling to a real problem in the Kenyan rental market.
