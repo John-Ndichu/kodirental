@@ -28,15 +28,15 @@ CREATE TABLE contributors (
 );
 
 CREATE TABLE rent_submissions (
-    id                   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    contributor_id       UUID NOT NULL REFERENCES contributors (id),
-    area_id              UUID NOT NULL REFERENCES areas (id),
-    house_type           VARCHAR(32) NOT NULL,
-    amount               NUMERIC(12, 2) NOT NULL,
-    status               VARCHAR(32) NOT NULL,
-    utilities_included   BOOLEAN NOT NULL,
-    created_at           TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at           TIMESTAMPTZ NOT NULL DEFAULT now(),
+    id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    contributor_id      UUID NOT NULL REFERENCES contributors (id),
+    area_id             UUID NOT NULL REFERENCES areas (id),
+    house_type          VARCHAR(32) NOT NULL,
+    amount              NUMERIC(38, 2) NOT NULL,
+    status              VARCHAR(32) NOT NULL,
+    utilities_included  BOOLEAN NOT NULL,
+    created_at          TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at          TIMESTAMPTZ NOT NULL DEFAULT now(),
     CONSTRAINT chk_rent_house_type CHECK (house_type IN (
         'SINGLE_ROOM', 'BEDSITTER', 'STUDIO', 'ONE_BEDROOM',
         'TWO_BEDROOM', 'THREE_BEDROOM', 'BUNGALOW', 'MAISONETTE')),
