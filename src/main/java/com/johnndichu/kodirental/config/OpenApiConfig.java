@@ -1,0 +1,29 @@
+package com.johnndichu.kodirental.config;
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
+import io.swagger.v3.oas.annotations.info.Info;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.security.SecurityScheme;
+import io.swagger.v3.oas.annotations.servers.Server;
+import org.springframework.context.annotation.Configuration;
+@Configuration
+@OpenAPIDefinition(
+        info = @Info(
+                title = "kodirental API",
+                version = "v1",
+                description = "A crowd-verified rent transparency API for Kenya. " +
+                        "Real renters report what they actually pay; anyone can query " +
+                        "typical rent for an area and house type, or check whether a " +
+                        "quote they've been given is fair."
+        ),
+        servers = @Server(url = "https://kodirental-api.fly.dev/api/v1"),
+        security = @SecurityRequirement(name = "bearerAuth")
+)
+@SecurityScheme(
+        name = "bearerAuth",
+        type = SecuritySchemeType.HTTP,
+        scheme = "bearer",
+        bearerFormat = "JWT"
+)
+public class OpenApiConfig {
+}
