@@ -1,0 +1,34 @@
+package com.johnndichu.kodirental.entity;
+
+import com.johnndichu.kodirental.base.BaseEntity;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import lombok.*;
+
+@Entity
+@Table(name = "contributors")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class Contributor extends BaseEntity {
+
+   @Column(name = "first_name", nullable = false)
+   private String firstName;
+
+   @Column(name = "last_name", nullable = false)
+   private String lastName;
+
+   @Column(name = "hashed_password", nullable = false)
+   private String password;
+
+@Column(nullable = false, unique = true)
+   private String email;
+
+   private boolean enabled  = true;
+
+
+}

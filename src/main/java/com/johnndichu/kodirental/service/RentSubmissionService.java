@@ -1,0 +1,160 @@
+package com.johnndichu.kodirental.service;
+
+
+import com.johnndichu.kodirental.dtos.RentSubmissionRequest;
+import com.johnndichu.kodirental.dtos.RentSubmissionResponse;
+import com.johnndichu.kodirental.entity.*;
+import com.johnndichu.kodirental.repository.AreaRepository;
+import com.johnndichu.kodirental.repository.ContributorRepository;
+import com.johnndichu.kodirental.repository.RentSubmissionRepository;
+
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.UUID;
+
+@Service
+public class RentSubmissionService {
+    private final RentSubmissionRepository rentSubmissionRepository;
+    private final AreaRepository areaRepository;
+    private final ContributorRepository contributorRepository;
+
+    public RentSubmissionService(RentSubmissionRepository rentSubmissionRepository, AreaRepository areaRepository, ContributorRepository contributorRepository) {
+        this.rentSubmissionRepository = rentSubmissionRepository;
+        this.areaRepository = areaRepository;
+        this.contributorRepository = contributorRepository;
+    }
+
+    public RentSubmissionResponse submit(RentSubmissionRequest request, String contributorEmail) {
+
+        Contributor contributor = contributorRepository
+                .findByEmail(contributorEmail)
+                .orElseThrow(() ->
+                        new IllegalArgumentException("Contributor not found")
+                );
+
+        Area area = areaRepository
+                .findById(request.areaId())
+                .orElseThrow(() ->
+                        new IllegalArgumentException("Area not found")
+                );
+
+        List<RentSubmission> existingMatches = rentSubmissionRepository
+                .findByContributorIdAndAreaIdAndHouseTypeAndUtilitiesIncludedAndStatus(
+                        contributor.getId(),
+                        area.getId(),
+                        request.houseType(),
+                        request.utilitiesIncluded(),
+                        SubmissionStatus.ACTIVE
+                );
+
+        RentSubmission submission;
+
+        if (!existingMatches.isEmpty()) {
+            submission = existingMatches.get(0);
+            submission.setAmount(request.amount());
+        } else {
+            SubmissionStatus status = determineStatus(area.getId(), request.houseType(), request.utilitiesIncluded(), request.amount());
+            submission = RentSubmission.builder()
+                    .contributor(contributor)
+                    .area(area)
+                    .houseType(request.houseType())
+                    .amount(request.amount())
+                    .status(status)
+                    .utilitiesIncluded(request.utilitiesIncluded())
+                    .build();
+        }
+
+        RentSubmission saved = rentSubmissionRepository.save(submission);
+
+        return toResponse(saved);
+    }
+
+    private RentSubmissionResponse toResponse(RentSubmission submission) {
+        return new RentSubmissionResponse(
+                submission.getId(),
+                submission.getContributor().getId(),
+                submission.getArea().getId(),
+                submission.getHouseType(),
+                submission.getAmount(),
+                submission.getStatus(),
+                submission.isUtilitiesIncluded()
+        );
+    }
+
+    public List<RentSubmissionResponse> listSubmissions(UUID areaId, HouseType houseType) {
+
+        List<RentSubmission> submissions;
+
+        if (areaId != null && houseType != null) {
+            submissions = rentSubmissionRepository
+                    .findByAreaIdAndHouseTypeAndStatus(areaId, houseType, SubmissionStatus.ACTIVE);
+        } else {
+            submissions = rentSubmissionRepository.findByStatus(SubmissionStatus.ACTIVE);
+        }
+
+        return submissions.stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    public List<RentSubmissionResponse> listMySubmissions(String contributorEmail) {
+        Contributor contributor = contributorRepository
+                .findByEmail(contributorEmail)
+                .orElseThrow(() ->
+                        new IllegalArgumentException("Contributor not found")
+                );
+
+        List<RentSubmission> submissions = rentSubmissionRepository
+                .findByContributorIdAndStatus(contributor.getId(), SubmissionStatus.ACTIVE);
+
+        return submissions.stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    private static final int MIN_SAMPLES_FOR_OUTLIER_CHECK = 3;
+    private static final double OUTLIER_STD_DEV_THRESHOLD = 2.0;
+
+    private SubmissionStatus determineStatus(
+            UUID areaId,
+            HouseType houseType,
+            boolean utilitiesIncluded,
+            BigDecimal newAmount
+    ) {
+
+        List<RentSubmission> existingSubmissions = rentSubmissionRepository
+                .findByAreaIdAndHouseTypeAndStatus(areaId, houseType, SubmissionStatus.ACTIVE)
+                .stream()
+                .filter(s -> s.isUtilitiesIncluded() == utilitiesIncluded)
+                .toList();
+
+        if (existingSubmissions.size() < MIN_SAMPLES_FOR_OUTLIER_CHECK) {
+            return SubmissionStatus.ACTIVE;
+        }
+        double mean = existingSubmissions.stream()
+                .mapToDouble(s -> s.getAmount().doubleValue())
+                .average()
+                .orElse(0.0);
+
+        double variance = existingSubmissions.stream()
+                .mapToDouble(s -> Math.pow(s.getAmount().doubleValue() - mean, 2))
+                .average()
+                .orElse(0.0);
+
+        double stdDev = Math.sqrt(variance);
+
+        if (stdDev == 0.0) {
+            return SubmissionStatus.ACTIVE;
+        }
+
+        double deviation = Math.abs(newAmount.doubleValue() - mean) / stdDev;
+
+        return deviation > OUTLIER_STD_DEV_THRESHOLD
+                ? SubmissionStatus.FLAGGED
+                : SubmissionStatus.ACTIVE;
+    }
+
+}
+
